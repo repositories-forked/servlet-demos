@@ -1,5 +1,8 @@
 package lk.ijse.dep.web.api;
 
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import lk.ijse.dep.web.model.Item;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import javax.servlet.ServletException;
@@ -9,10 +12,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author : Ranjith Suranga <suranga@ijse.lk>
@@ -27,27 +33,25 @@ public class ItemServlet extends HttpServlet {
         BasicDataSource cp = (BasicDataSource) getServletContext().getAttribute("cp");
 
         resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-        resp.setContentType("application/xml");
+        resp.setContentType("application/json");
         try (PrintWriter out = resp.getWriter()) {
             try {
                 Connection connection = cp.getConnection();
                 Statement stm = connection.createStatement();
                 ResultSet rst = stm.executeQuery("SELECT * FROM Item");
 
-                out.println("<items>");
+                List<Item> itemList = new ArrayList<>();
+
                 while (rst.next()) {
                     String code = rst.getString(1);
                     String description = rst.getString(2);
-                    String unitPrice = rst.getBigDecimal(3).setScale(2).toPlainString();
+                    BigDecimal unitPrice = rst.getBigDecimal(3).setScale(2);
                     int qtyOnHand = rst.getInt(4);
-                    out.println("<item>" +
-                                    "<code>" + code + "</code>" +
-                                    "<description>" + description + "</description>" +
-                                    "<unit-price>" + unitPrice + "</unit-price>" +
-                                    "<qty-on-hand>" + qtyOnHand + "</qty-on-hand>" +
-                                "</item>");
+                    itemList.add(new Item(code, description,qtyOnHand, unitPrice));
                 }
-                out.println("</items>");
+
+                Jsonb jsonb = JsonbBuilder.create();
+                out.println(jsonb.toJson(itemList));
                 connection.close();
             } catch (SQLException e) {
                 e.printStackTrace();
