@@ -24,38 +24,26 @@ public class CustomerServlet extends HttpServlet {
         BasicDataSource cp = (BasicDataSource) getServletContext().getAttribute("cp");
 
         resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-        resp.setContentType("text/html");
+        resp.setContentType("application/xml");
         try (PrintWriter out = resp.getWriter()) {
-            out.println("<div>");
-            out.println("<h1>Customer Servlet</h1>");
             try {
                 Connection connection = cp.getConnection();
-//                System.out.println(cp.getNumActive());
-//                System.out.println(cp.getNumIdle());
                 Statement stm = connection.createStatement();
                 ResultSet rst = stm.executeQuery("SELECT * FROM Customer");
-                out.println("<table style='border-collapse: collapse; border: 1px solid black;'>");
-                out.println("<thead>" +
-                                "<tr>" +
-                                    "<th>ID</th>" +
-                                    "<th>Name</th>" +
-                                    "<th>Address</th>" +
-                                "</tr>" +
-                            "</thead>" +
-                            "<tbdoy>");
+
+                out.println("<customers>");
                 while (rst.next()) {
                     String id = rst.getString(1);
                     String name = rst.getString(2);
                     String address = rst.getString(3);
-                    out.println("<tr>" +
-                            "<td>" + id + "</td>" +
-                            "<td>" + name + "</td>" +
-                            "<td>" + address + "</td>" +
-                            "</tr>");
+                    out.println("<customer>" +
+                                    "<id>" + id + "</id>" +
+                                    "<name>" + name + "</name>" +
+                                    "<address>" + address + "</address>" +
+                                "</customer>");
                 }
+                out.println("</customers>");
                 connection.close();
-                out.println("</tbdoy></table>");
-                out.println("</div>");
             } catch (SQLException e) {
                 e.printStackTrace();
             }

@@ -27,39 +27,28 @@ public class ItemServlet extends HttpServlet {
         BasicDataSource cp = (BasicDataSource) getServletContext().getAttribute("cp");
 
         resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-        resp.setContentType("text/html");
+        resp.setContentType("application/xml");
         try (PrintWriter out = resp.getWriter()) {
-            out.println("<div>");
-            out.println("<h1>Item Servlet</h1>");
             try {
                 Connection connection = cp.getConnection();
                 Statement stm = connection.createStatement();
                 ResultSet rst = stm.executeQuery("SELECT * FROM Item");
-                out.println("<table style='border-collapse: collapse; border: 1px solid black;'>");
-                out.println("<thead>" +
-                                "<tr>" +
-                                    "<th>Code</th>" +
-                                    "<th>Description</th>" +
-                                    "<th>Qty. on Hand</th>" +
-                                    "<th>Unit Price</th>" +
-                                "</tr>" +
-                            "</thead>" +
-                            "<tbdoy>");
+
+                out.println("<items>");
                 while (rst.next()) {
                     String code = rst.getString(1);
                     String description = rst.getString(2);
                     String unitPrice = rst.getBigDecimal(3).setScale(2).toPlainString();
                     int qtyOnHand = rst.getInt(4);
-                    out.println("<tr>" +
-                            "<td>" + code + "</td>" +
-                            "<td>" + description + "</td>" +
-                            "<td>" + unitPrice + "</td>" +
-                            "<td>" + qtyOnHand + "</td>" +
-                            "</tr>");
+                    out.println("<item>" +
+                                    "<code>" + code + "</code>" +
+                                    "<description>" + description + "</description>" +
+                                    "<unit-price>" + unitPrice + "</unit-price>" +
+                                    "<qty-on-hand>" + qtyOnHand + "</qty-on-hand>" +
+                                "</item>");
                 }
+                out.println("</items>");
                 connection.close();
-                out.println("</tbdoy></table>");
-                out.println("</div>");
             } catch (SQLException e) {
                 e.printStackTrace();
             }
