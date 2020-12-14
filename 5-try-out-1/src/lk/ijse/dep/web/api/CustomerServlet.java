@@ -24,18 +24,18 @@ import java.util.List;
 @WebServlet(name = "CustomerServlet", urlPatterns = "/customers")
 public class CustomerServlet extends HttpServlet {
 
-    @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-        resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
-        resp.addHeader("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
-    }
+//    @Override
+//    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+//        resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+//        resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
+//        resp.addHeader("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+//    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         /* CORS Policy */
-        resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+//        resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 
         String id = req.getParameter("id");
         BasicDataSource cp = (BasicDataSource) getServletContext().getAttribute("cp");
@@ -75,12 +75,22 @@ public class CustomerServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         /* CORS Policy */
-        resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+//        resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 
         BasicDataSource cp = (BasicDataSource) getServletContext().getAttribute("cp");
         try (Connection connection = cp.getConnection()) {
-            Jsonb jsonb = JsonbBuilder.create();
-            Customer customer = jsonb.fromJson(req.getReader(), Customer.class);
+
+            Customer customer;
+            if (req.getContentType().equals("application/json")){
+                Jsonb jsonb = JsonbBuilder.create();
+                customer = jsonb.fromJson(req.getReader(), Customer.class);
+            }else{
+                /* application/x-www-form-urlencoded */
+                String id = req.getParameter("id");
+                String name = req.getParameter("name");
+                String address = req.getParameter("address");
+                customer = new Customer(id,name,address);
+            }
 
             /* Validation Logic */
             if (customer.getId() == null || customer.getName() == null || customer.getAddress() == null) {
@@ -115,7 +125,7 @@ public class CustomerServlet extends HttpServlet {
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         /* CORS Policy */
-        resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+//        resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 
         String id = req.getParameter("id");
         if (id == null || !id.matches("C\\d{3}")) {
@@ -164,7 +174,7 @@ public class CustomerServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         /* CORS Policy */
-        resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+//        resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 
         String id = req.getParameter("id");
         if (id == null || !id.matches("C\\d{3}")) {
